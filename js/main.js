@@ -1,14 +1,10 @@
-/*----- constants -----*/
-var bombImage = '<img src="images/bomb.png">';
-var flagImage = '<img src="images/flag.png">';
-var wrongBombImage = '<img src="images/wrong-bomb.png">'
-var sizeLookup = {
-  '9': {totalBombs: 10, tableWidth: '245px'},
-  '16': {totalBombs: 40, tableWidth: '420px'},
-  '30': {totalBombs: 160, tableWidth: '794px'}
+const flagImage = '<img src="images/flag.png">';
+const bombImage = '<img src="images/bomb.png">';
+const wrongBombImage = '<img src="images/wrong-bomb.png">'
+const sizeLookup = {
+  '16': {totalTime: 40, tableWidth: '420px'},
 };
-var colors = [
-  '',
+const colors = [
   '#0000FA',
   '#4B802D',
   '#DB1300',
@@ -19,36 +15,30 @@ var colors = [
   '#7A7A7A',
 ];
 
-/*----- app's state (variables) -----*/
-var size = 16;
-var board;
-var bombCount;
-var timeElapsed;
-var adjBombs;
-var hitBomb;
-var elapsedTime;
-var timerId;
-var winner;
+let size = 16;
+let board;
+let bombCount;
+let timeElapsed;
+let adjBombs;
+let hitBomb;
+let elapsedTime;
+let timerId;
+let winner;
 
-/*----- cached element references -----*/
-var boardEl = document.getElementById('board');
+let boardEl = document.getElementById('board');
 
-/*----- event listeners -----*/
-document.getElementById('size-btns').addEventListener('click', function(e) {
-  size = parseInt(e.target.id.replace('size-', ''));
   init();
-  render();
-});
+  render('game-board');
 
 boardEl.addEventListener('click', function(e) {
   if (winner || hitBomb) return;
-  var clickedEl;
+  let clickedEl;
   clickedEl = e.target.tagName.toLowerCase() === 'img' ? e.target.parentElement : e.target;
   if (clickedEl.classList.contains('game-cell')) {
     if (!timerId) setTimer();
-    var row = parseInt(clickedEl.dataset.row);
-    var col = parseInt(clickedEl.dataset.col);
-    var cell = board[row][col];
+    let row = parseInt(clickedEl.dataset.row);
+    let col = parseInt(clickedEl.dataset.col);
+    let cell = board[row][col];
     if (e.shiftKey && !cell.revealed && bombCount > 0) {
       bombCount += cell.flag() ? -1 : 1;
     } else {
@@ -71,7 +61,6 @@ function createResetListener() {
   });
 }
 
-/*----- functions -----*/
 function setTimer () {
   timerId = setInterval(function(){
     elapsedTime += 1;
@@ -88,19 +77,7 @@ function revealAll() {
 };
 
 function buildTable() {
-  var topRow = `
-  <tr>
-    <td class="menu" id="window-title-bar" colspan="${size}">
-      <div id="window-title"><img src="images/mine-menu-icon.png"> Minesweeper</div>
-      <div id="window-controls"><img src="images/window-controls.png"></div>
-    </td>
-  <tr>
-    <td class="menu" id="folder-bar" colspan="${size}">
-      <div id="folder1"><a href="https://github.com/nickarocho/minesweeper/blob/master/readme.md" target="blank">Read Me </a></div>
-      <div id="folder2"><a href="https://github.com/nickarocho/minesweeper" target="blank">Source Code</a></div>
-    </td>
-  </tr>
-  </tr>
+  let topRow = `
     <tr>
       <td class="menu" colspan="${size}">
           <section id="status-bar">
@@ -114,7 +91,7 @@ function buildTable() {
   boardEl.innerHTML = topRow + `<tr>${'<td class="game-cell"></td>'.repeat(size)}</tr>`.repeat(size);
   boardEl.style.width = sizeLookup[size].tableWidth;
   createResetListener();
-  var cells = Array.from(document.querySelectorAll('td:not(.menu)'));
+  let cells = Array.from(document.querySelectorAll('td:not(.menu)'));
   cells.forEach(function(cell, idx) {
     cell.setAttribute('data-row', Math.floor(idx / size));
     cell.setAttribute('data-col', idx % size);
@@ -122,7 +99,7 @@ function buildTable() {
 }
 
 function buildArrays() {
-  var arr = Array(size).fill(null);
+  let arr = Array(size).fill(null);
   arr = arr.map(function() {
     return new Array(size).fill(null);
   });
@@ -154,7 +131,7 @@ function init() {
 };
 
 function getBombCount() {
-  var count = 0;
+  let count = 0;
   board.forEach(function(row){
     count += row.filter(function(cell) {
       return cell.bomb;
@@ -164,22 +141,22 @@ function getBombCount() {
 };
 
 function addBombs() {
-  var currentTotalBombs = sizeLookup[`${size}`].totalBombs;
-  while (currentTotalBombs !== 0) {
-    var row = Math.floor(Math.random() * size);
-    var col = Math.floor(Math.random() * size);
-    var currentCell = board[row][col]
+  let currentTotalTime = sizeLookup[`${size}`].totalTime;
+  while (currentTotalTime !== 0) {
+    let row = Math.floor(Math.random() * size);
+    let col = Math.floor(Math.random() * size);
+    let currentCell = board[row][col]
     if (!currentCell.bomb){
       currentCell.bomb = true
-      currentTotalBombs -= 1
+      currentTotalTime -= 1
     }
   }
 };
 
 function getWinner() {
-  for (var row = 0; row<board.length; row++) {
-    for (var col = 0; col<board[0].length; col++) {
-      var cell = board[row][col];
+  for (let row = 0; row<board.length; row++) {
+    for (let col = 0; col<board[0].length; col++) {
+      let cell = board[row][col];
       if (!cell.revealed && !cell.bomb) return false;
     }
   } 
@@ -188,12 +165,11 @@ function getWinner() {
 
 function render() {
   document.getElementById('bomb-counter').innerText = bombCount.toString().padStart(3, '0');
-  var seconds = timeElapsed % 60;
-  var tdList = Array.from(document.querySelectorAll('[data-row]'));
+  let tdList = Array.from(document.querySelectorAll('[data-row]'));
   tdList.forEach(function(td) {
-    var rowIdx = parseInt(td.getAttribute('data-row'));
-    var colIdx = parseInt(td.getAttribute('data-col'));
-    var cell = board[rowIdx][colIdx];
+    let rowIdx = parseInt(td.getAttribute('data-row'));
+    let colIdx = parseInt(td.getAttribute('data-col'));
+    let cell = board[rowIdx][colIdx];
     if (cell.flagged) {
       td.innerHTML = flagImage;
     } else if (cell.revealed) {
@@ -214,7 +190,7 @@ function render() {
     document.getElementById('reset').innerHTML = '<img src=images/dead-face.png>';
     runCodeForAllCells(function(cell) {
       if (!cell.bomb && cell.flagged) {
-        var td = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
+        let td = document.querySelector(`[data-row="${cell.row}"][data-col="${cell.col}"]`);
         td.innerHTML = wrongBombImage;
       }
     });
